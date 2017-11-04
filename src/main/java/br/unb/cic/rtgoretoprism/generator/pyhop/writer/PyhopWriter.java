@@ -52,6 +52,7 @@ public class PyhopWriter{
 	private AgentDefinition ad;
 	private Actor a;
 	private PrintWriter file;
+	private LinkedList<String> actions = new LinkedList<String>();
 	
 	
 	public PyhopWriter(AgentDefinition ad, Actor a){
@@ -68,6 +69,11 @@ public class PyhopWriter{
 		
 		file.print("pyhop(state, [");
 		goalState(ad.rootlist.getFirst(), 0);
+		if(actions.size()!=0){
+			for(int i=0; i<actions.size();i++){
+				System.out.println("LIstinha:" + actions.get(i));
+			}
+		}
 		file.print("], verbose=2)");
 		
 		file.close();
@@ -257,20 +263,28 @@ public class PyhopWriter{
 
 	public void sAND(RTContainer n, int ctx){		
 		int i;
-		
-		file.print("\n('and_seq', '" + getName_noRT(n.getName()) + "'");
+		String action = "\n('and_seq', '" + getName_noRT(n.getName()) + "'";
 		for(i=0;i<container_size(n);i++){
 			
-			file.print(", '");
-			file.print(getName_noRT(container_element(n,i).getName()));
-			file.print("'");
+			action = action.concat(", '");
+			action = action.concat(getName_noRT(container_element(n,i).getName()));
+			action = action.concat("'");
 			
 		}
-		
-		file.print(")");
+		action = action.concat(")");
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
+		
+		file.print(action);
+		RTContainer next = container_element(n,0);
+		if(next.getRtRegex()==null && container_size(next)==0){
+			actions.addLast(action);
+		} else {
+			actions.addFirst(action);
+		}
+		
+		
 		
 	//		for(int i=0;i<container_size(n);i++){
 //			goalState(container_element(n,i), ctx);
@@ -281,19 +295,28 @@ public class PyhopWriter{
 
 	public void pAND(RTContainer n, int ctx){
 		int i;
-		file.print("\n('and_par', '" + getName_noRT(n.getName()) + "'");
+		String action = "\n('and_seq', '" + getName_noRT(n.getName()) + "'";
 		for(i=0;i<container_size(n);i++){
 			
-			file.print(", '");
-			file.print(getName_noRT(container_element(n,i).getName()));
-			file.print("'");
+			action = action.concat(", '");
+			action = action.concat(getName_noRT(container_element(n,i).getName()));
+			action = action.concat("'");
 			
 		}
-		
-		file.print(")");
+
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
+		action = action.concat(")");
+		file.println(action);
+		RTContainer next = container_element(n,0);
+		if(next.getRtRegex()==null && container_size(next)==0){
+			actions.addLast(action);
+		} else {
+			actions.addFirst(action);
+		}
+		
+		
 		
 		//		for(int i=0;i<container_size(n);i++){
 //			goalState(container_element(n,i), ctx);
@@ -423,15 +446,25 @@ public class PyhopWriter{
 
 	public void means_end(RTContainer n, int ctx){
 		int i;
+		String action = "";
 		for(i=0;i<container_size(n);i++){
 		
-			file.print("\n('means_end', '" + getName_noRT(n.getName()) + "')");
+			action = action.concat("\n('means_end', '" + getName_noRT(n.getName()) + "')");
 			
 		}
+		file.println(action);
+		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
-		//		for(int i=0;i<container_size(n);i++){
+		RTContainer next = container_element(n,0);
+		if(next.getRtRegex()==null && container_size(next)==0){
+			actions.addLast(action);
+		} else {
+			actions.addFirst(action);
+		}
+
+				//		for(int i=0;i<container_size(n);i++){
 //			goalState(container_element(n,i), ctx);
 //			System.out.println(getName_noRT(container_element(n,i).getName()));
 //			file.print("('completed', "+ getName_noRT(container_element(n,i).getName()) +")");

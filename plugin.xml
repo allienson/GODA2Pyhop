@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension point="org.eclipse.ui.preferencePages">
+		<page id="ATCPreferencePage"
+			name="PRISM, BPMN and Pyhop Generators"
+			class="br.unb.cic.rtgoretoprism.preferences.ATCPreferencePage"
+			category="TAOM4EPreferencePage">
+		</page>
+	</extension>
+	
+    <extension
+         point="org.eclipse.ui.actionSets">
+      <actionSet
+            label="PRISM, BPMN and Pyhop Generators"
+            visible="true"
+            id="org.eclipse.ui.actionSets">
+         <menu
+               id="verificationMenu"
+               label="GODA">
+            <separator
+                  name="prismGroup">
+            </separator>
+         </menu>
+         <action
+               label="&amp;PRISM, BPMN and Pyhop Generators"
+               icon="src/main/resources/icons/sample.gif"
+               class="br.unb.cic.rtgoretoprism.action.PRISMCodeGenerationAction"
+               tooltip="Generate PRISM Model"
+               menubarPath="verificationMenu/prismGroup"
+               toolbarPath="prismGroup"
+               id="br.unb.cic.rtgoretoprism.action.PRISMCodeGenerationAction">
+         </action>
+         <action
+               label="&amp;Generate BPMN"
+               icon="src/main/resources/icons/sample.gif"
+               class="br.unb.cic.rtgoretoprism.action.BPMNGenerationAction"
+               tooltip="Generate BPMN"
+               menubarPath="verificationMenu/prismGroup"
+               toolbarPath="prismGroup"
+               id="br.unb.cic.rtgoretoprism.action.BPMNGenerationAction">
+         </action>
+         <action
+               label="&amp;Evaluate PRISM verification"
+               icon="src/main/resources/icons/sample.gif"
+               class="br.unb.cic.rtgoretoprism.action.EvaluatePRISMAction"
+               tooltip="Evaluate reliability verification by PRISM tool"
+               menubarPath="verificationMenu/prismGroup"
+               toolbarPath="prismGroup"
+               id="br.unb.cic.rtgoretoprism.action.EvaluatePRISMAction">
+         </action>
+         <action
+               label="&amp;Evaluate PARAM verification"
+               icon="src/main/resources/icons/sample.gif"
+               class="br.unb.cic.rtgoretoprism.action.EvaluatePARAMAction"
+               tooltip="Evaluate parametric formula generation by PARAM tool"
+               menubarPath="verificationMenu/prismGroup"
+               toolbarPath="prismGroup"
+               id="br.unb.cic.rtgoretoprism.action.EvaluatePARAMAction">
+         </action>
+         <action
+               label="&amp;Generate Pyhop"
+               icon="src/main/resources/icons/favicon.ico"
+               class="br.unb.cic.rtgoretoprism.action.PyhopGenerationAction"
+               tooltip="Generate Pyhop"
+               menubarPath="verificationMenu/prismGroup"
+               toolbarPath="prismGroup"
+               id="br.unb.cic.rtgoretoprism.action.PyhopGenerationAction">
+         </action>
+      </actionSet>
+   </extension>
+   
+   
+   <!-- TAOM4E EXAMPLE -->
+   <extension point="org.eclipse.ui.popupMenus"> 
+		<objectContribution 
+	    	id="it.itc.sra.taom4e.t2xJadexGenerator.contribution.popup.object"
+		  	objectClass="org.eclipse.core.resources.IFolder"
+		  	nameFilter="AgentRole_*"
+		  	adaptable = "true" >
+		  	
+		  	<menu
+         		id="it.itc.sra.taom4e.t2xJadexGenerator.contribution.subMenu"
+         		label="Agent Generator"
+         		path="additions">
+	      		<separator name="group1"/>
+	      	</menu>
+		    <action
+        		id="it.itc.sra.taom4e.t2xJadexGenerator.RunKLAgent" 
+		        label="Run t2x (KL) Agent"
+    	     	icon="icons/JadexGenerator.gif"
+        	 	menubarPath="it.itc.sra.taom4e.t2xJadexGenerator.contribution.subMenu/group1"
+        	 	enablesFor="1"
+	      		class="it.itc.sra.taom4e.t2xJadexGenerator.action.RunJadexAgentAction">  
+		    </action> 
+		    
+		</objectContribution> 
+	</extension>
+   
+   <extension point="org.eclipse.ui.popupMenus">
+		<viewerContribution
+			targetID="it.itc.sra.taom4e.platform.tropos.editor.contextmenu"
+			id="br.unb.cic.rtgoretoprism.vc.PARAMFormGen">
+			
+			<menu
+				id="br.unb.cic.rtgoretoprism.vc.subMenu"         	
+         		label="PRISM, BPMN and Pyhop Generators"
+         		path="additions">
+	      		<separator name="group1"/>
+	      	</menu>
+	      	
+			<action
+				label="Parametric Formula Generation"
+				class="br.unb.cic.rtgoretoprism.action.RunParamAction"
+				menubarPath="br.unb.cic.rtgoretoprism.vc.subMenu/group1"
+				enablesFor="+"
+				icon="icons/JadexGenerator.gif"
+				id="br.unb.cic.rtgoretoprism.action.RunParamAction">
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_ActorUIEditPart">
+				</selection>
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_IntentionalUIEditPart">
+				</selection>
+			</action>
+		</viewerContribution>
+	</extension>
+    <extension point="org.eclipse.ui.popupMenus">
+		<viewerContribution
+			targetID="it.itc.sra.taom4e.platform.tropos.editor.contextmenu"
+			id="br.unb.cic.rtgoretoprism.vc.PRISMCodeGen">
+			
+			<action
+				label="PRISM DTMC Code Generation"
+				class="br.unb.cic.rtgoretoprism.action.PRISMCodeGenerationAction"
+				menubarPath="br.unb.cic.rtgoretoprism.vc.subMenu/group1"
+				enablesFor="+"
+				icon="icons/JadexGenerator.gif"
+				id="br.unb.cic.rtgoretoprism.action.PRISMCodeGenerationActionIn">
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_ActorUIEditPart">
+				</selection>
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_IntentionalUIEditPart">
+				</selection>
+			</action>
+		</viewerContribution>
+	</extension>
+	<extension point="org.eclipse.ui.popupMenus">
+		<viewerContribution
+			targetID="it.itc.sra.taom4e.platform.tropos.editor.contextmenu"
+			id="br.unb.cic.rtgoretoprism.vc.BPMNGen">
+			
+			<action
+				label="Generate BPMN"
+				class="br.unb.cic.rtgoretoprism.action.BPMNGenerationAction"
+				menubarPath="br.unb.cic.rtgoretoprism.vc.subMenu/group1"
+				enablesFor="+"
+				icon="icons/JadexGenerator.gif"
+				id="br.unb.cic.rtgoretoprism.action.BPMNGenerationActionIn">
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_ActorUIEditPart">
+				</selection>
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_IntentionalUIEditPart">
+				</selection>
+			</action>
+		</viewerContribution>
+	</extension>
+	<extension point="org.eclipse.ui.popupMenus">
+		<viewerContribution
+			targetID="it.itc.sra.taom4e.platform.tropos.editor.contextmenu"
+			id="br.unb.cic.rtgoretoprism.vc.PyhopGen">
+			
+			<action
+				label="Generate Pyhop"
+				class="br.unb.cic.rtgoretoprism.action.PyhopGenerationAction"
+				menubarPath="br.unb.cic.rtgoretoprism.vc.subMenu/group1"
+				enablesFor="+"
+				icon="icons/JadexGenerator.gif"
+				id="br.unb.cic.rtgoretoprism.action.PyhopGenerationActionIn">
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_ActorUIEditPart">
+				</selection>
+				<selection
+					class="it.itc.sra.taom4e.platform.edit.parts.mixeddiagram.MD_IntentionalUIEditPart">
+				</selection>
+			</action>
+		</viewerContribution>
+	</extension>
+	 
+
+</plugin>

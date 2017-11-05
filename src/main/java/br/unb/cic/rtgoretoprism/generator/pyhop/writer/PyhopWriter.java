@@ -70,8 +70,12 @@ public class PyhopWriter{
 		file.print("pyhop(state, [");
 		goalState(ad.rootlist.getFirst(), 0);
 		if(actions.size()!=0){
-			for(int i=0; i<actions.size();i++){
+			for(int i=0; i<actions.size(); i++){
 				System.out.println("LIstinha:" + actions.get(i));
+				if(i != actions.size()){
+					String action = actions.get(i).concat(", \\\n");
+					file.print(action);
+				}
 			}
 		}
 		file.print("], verbose=2)");
@@ -80,7 +84,7 @@ public class PyhopWriter{
 	}
 
 	private PrintWriter createFile() throws FileNotFoundException {
-		PrintWriter fileObj = new PrintWriter( "/home/sabiah/Desktop/goda_example.py" );
+		PrintWriter fileObj = new PrintWriter( "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py" );
 		fileObj.println("from __future__ import print_function");
 		fileObj.println("from pyhop import *\n");
 		fileObj.println("import goda_operators");
@@ -210,7 +214,8 @@ public class PyhopWriter{
 			get_ctx(n,ctx);
 			ctx+=n.getFulfillmentConditions().size()-ctx;
 		}
-
+		System.out.println("Regra:" + rule);
+		System.out.println(n.getDecomposition());
 		if(rule==null)
 			rule="none";
 
@@ -223,6 +228,7 @@ public class PyhopWriter{
 		}
 
 		if(rule.indexOf(';') != -1 && n.getDecomposition()==Const.OR){
+			System.out.println("alou?");
 			sOR(n,ctx);
 		}
  
@@ -263,81 +269,93 @@ public class PyhopWriter{
 
 	public void sAND(RTContainer n, int ctx){		
 		int i;
-		String action = "\n('and_seq', '" + getName_noRT(n.getName()) + "'";
+		String action = "('and_seq', '" + getName_noRT(n.getName()) + "'";
+		
 		for(i=0;i<container_size(n);i++){
-			
 			action = action.concat(", '");
 			action = action.concat(getName_noRT(container_element(n,i).getName()));
 			action = action.concat("'");
-			
 		}
 		action = action.concat(")");
+		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
 		
-		file.print(action);
 		RTContainer next = container_element(n,0);
 		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addLast(action);
-		} else {
 			actions.addFirst(action);
+		} else {
+			actions.addLast(action);
 		}
-		
-		
-		
-	//		for(int i=0;i<container_size(n);i++){
-//			goalState(container_element(n,i), ctx);
-//			System.out.println(getName_noRT(container_element(n,i).getName()));	
-//			file.print("('completed', '" + getName_noRT(container_element(n,i).getName()) +"')");
-//		}
 	}
 
 	public void pAND(RTContainer n, int ctx){
 		int i;
-		String action = "\n('and_seq', '" + getName_noRT(n.getName()) + "'";
+		String action = "('and_par', '" + getName_noRT(n.getName()) + "'";
+		
 		for(i=0;i<container_size(n);i++){
-			
 			action = action.concat(", '");
 			action = action.concat(getName_noRT(container_element(n,i).getName()));
 			action = action.concat("'");
-			
 		}
-
+		action = action.concat(")");
+		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
-		action = action.concat(")");
-		file.println(action);
+		
 		RTContainer next = container_element(n,0);
 		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addLast(action);
-		} else {
 			actions.addFirst(action);
+		} else {
+			actions.addLast(action);
 		}
-		
-		
-		
-		//		for(int i=0;i<container_size(n);i++){
-//			goalState(container_element(n,i), ctx);
-//			System.out.println(getName_noRT(container_element(n,i).getName()));
-//			file.print("('completed', "+ getName_noRT(container_element(n,i).getName()) +")");
-//		}
 	}
 
 	public void sOR(RTContainer n, int ctx){
-		for(int i=0;i<container_size(n);i++){
+		int i;
+		String action = "('or_seq', '" + getName_noRT(n.getName()) + "'";
+		
+		for(i=0;i<container_size(n);i++){
+			action = action.concat(", '");
+			action = action.concat(getName_noRT(container_element(n,i).getName()));
+			action = action.concat("'");
+		}
+		action = action.concat(")");
+		
+		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
-			System.out.println(getName_noRT(container_element(n,i).getName()));
-			file.print("('completed', "+ getName_noRT(container_element(n,i).getName()) +")");
+		}
+		
+		RTContainer next = container_element(n,0);
+		if(next.getRtRegex()==null && container_size(next)==0){
+			actions.addFirst(action);
+		} else {
+			actions.addLast(action);
 		}
 	}
 
 	public void pOR(RTContainer n, int ctx){
-		for(int i=0;i<container_size(n);i++){
+		int i;
+		String action = "('or_par', '" + getName_noRT(n.getName()) + "'";
+		
+		for(i=0;i<container_size(n);i++){
+			action = action.concat(", '");
+			action = action.concat(getName_noRT(container_element(n,i).getName()));
+			action = action.concat("'");
+		}
+		action = action.concat(")");
+		
+		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
-			System.out.println(getName_noRT(container_element(n,i).getName()));
-			file.print("('completed', "+ getName_noRT(container_element(n,i).getName()) +")");
+		}
+		
+		RTContainer next = container_element(n,0);
+		if(next.getRtRegex()==null && container_size(next)==0){
+			actions.addFirst(action);
+		} else {
+			actions.addLast(action);
 		}
 	}
 
@@ -447,27 +465,20 @@ public class PyhopWriter{
 	public void means_end(RTContainer n, int ctx){
 		int i;
 		String action = "";
+		RTContainer next = container_element(n,0);
 		for(i=0;i<container_size(n);i++){
-		
-			action = action.concat("\n('means_end', '" + getName_noRT(n.getName()) + "')");
-			
+			action = action.concat("('means_end', '" + getName_noRT(n.getName()) + "', '" + getName_noRT(next.getName()) + "')");	
 		}
-		file.println(action);
 		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
-		RTContainer next = container_element(n,0);
+		
+		//RTContainer next = container_element(n,0);
 		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addLast(action);
-		} else {
 			actions.addFirst(action);
+		} else {
+			actions.addLast(action);
 		}
-
-				//		for(int i=0;i<container_size(n);i++){
-//			goalState(container_element(n,i), ctx);
-//			System.out.println(getName_noRT(container_element(n,i).getName()));
-//			file.print("('completed', "+ getName_noRT(container_element(n,i).getName()) +")");
-//		}
 	}
 }

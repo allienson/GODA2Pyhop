@@ -4,6 +4,7 @@ import java.util.*;
 import it.itc.sra.taom4e.model.core.informalcore.Plan;
 import it.itc.sra.taom4e.model.core.informalcore.Actor;
 
+import java.awt.Desktop;
 import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -63,11 +64,11 @@ public class PyhopWriter{
 	public void start() throws FileNotFoundException{
 		file = createFile(a.getName());
 		
-		file.print("state.objects = {");
+		file.print("state.objects = { \\\n");
 		initialState(ad.rootlist.getFirst());
 		file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
 		
-		file.print("pyhop(state, [");
+		file.print("pyhop(state, [ \\\n");
 		goalState(ad.rootlist.getFirst(), 0);
 		if(actions.size()!=0){
 			for(int i=0; i<actions.size(); i++){
@@ -78,7 +79,7 @@ public class PyhopWriter{
 				}
 			}
 		}
-		file.print("], verbose=2)");
+		file.print("], verbose=1)");
 		
 		file.close();
 	}
@@ -106,12 +107,10 @@ public class PyhopWriter{
 			RTContainer next = container_element(root,i);
 			if(next.getRtRegex()==null && container_size(next)==0){
 				variable = getName_noRT(container_element(root,i).getName());
-				System.out.println("true:" + variable);
-				file.print("'" + variable + "':True, ");
+				file.print("'" + variable + "':True, \\\n");
 			} else {
 				variable = getName_noRT(container_element(root,i).getName());
-				System.out.println("false:" + variable);
-				file.print("'" + variable + "':False, ");
+				file.print("'" + variable + "':False, \\\n");
 			}
 		}
 	}
@@ -215,8 +214,7 @@ public class PyhopWriter{
 			get_ctx(n,ctx);
 			ctx+=n.getFulfillmentConditions().size()-ctx;
 		}
-		System.out.println("Regra:" + rule);
-		System.out.println(n.getDecomposition());
+
 		if(rule==null)
 			rule="none";
 
@@ -229,7 +227,6 @@ public class PyhopWriter{
 		}
 
 		if(rule.indexOf(';') != -1 && n.getDecomposition()==Const.OR){
-			System.out.println("alou?");
 			sOR(n,ctx);
 		}
  
@@ -238,19 +235,19 @@ public class PyhopWriter{
 		}
 
 		if(rule.indexOf('+') != -1){
-			run_k(n,ctx);
+			k_times(n,ctx);
 		}
 
 		if(rule.indexOf('%') != -1){
-			paralell_k(n,ctx);
+			k_times_par(n,ctx);
 		}
 
 		if(rule.indexOf('@') != -1){
-			try_k(n,ctx);
+			k_tries(n,ctx);
 		}
 
 		if(rule.contains("opt")){
-			optional(n,ctx);
+			opt(n,ctx);
 		}
 
 		if(rule.contains("try")){		
@@ -262,8 +259,6 @@ public class PyhopWriter{
 		}
 
 		if(rule.contains("none") && container_size(n)>0){
-			System.out.println(n.getName());
-			System.out.println("regra:" + rule);
 			means_end(n,ctx);
 		}
 	}
@@ -336,7 +331,7 @@ public class PyhopWriter{
 		actions.addLast(action);
 	}
 
-	public void run_k(RTContainer n, int ctx){ //n+k
+	public void k_times(RTContainer n, int ctx){ //n+k
 		int i;
 		String args = n.getRtRegex().substring(n.getRtRegex().indexOf("+") + 1, n.getRtRegex().length());
 		int k = Integer.parseInt(args);
@@ -350,15 +345,10 @@ public class PyhopWriter{
 			goalState(container_element(n,i), ctx);
 		}
 		
-		//RTContainer next = container_element(n,0);
-		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addFirst(action);
-		} else {
-			actions.addLast(action);
-		}
+		actions.addLast(action);
 	}
 
-	public void paralell_k(RTContainer n, int ctx){ //n#k
+	public void k_times_par(RTContainer n, int ctx){ //n#k
 		int i;
 		String args = n.getRtRegex().substring(n.getRtRegex().indexOf("%") + 1, n.getRtRegex().length());
 		int k = Integer.parseInt(args);
@@ -372,15 +362,10 @@ public class PyhopWriter{
 			goalState(container_element(n,i), ctx);
 		}
 		
-		//RTContainer next = container_element(n,0);
-		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addFirst(action);
-		} else {
-			actions.addLast(action);
-		}
+		actions.addLast(action);
 	}
 
-	public void try_k(RTContainer n, int ctx){ //n@k
+	public void k_tries(RTContainer n, int ctx){ //n@k
 		int i;
 		String args = n.getRtRegex().substring(n.getRtRegex().indexOf("@") + 1, n.getRtRegex().length());
 		int k = Integer.parseInt(args);
@@ -393,68 +378,59 @@ public class PyhopWriter{
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
-		
-		//RTContainer next = container_element(n,0);
-		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addFirst(action);
-		} else {
-			actions.addLast(action);
-		}
+
+		actions.addLast(action);
 	}
 
-	public void optional(RTContainer n, int ctx){
+	public void opt(RTContainer n, int ctx){
 		int i;
 		String action = "";
 		RTContainer next = container_element(n,0);
 		for(i=0;i<container_size(n);i++){
-			action = action.concat("('optional', '" + getName_noRT(n.getName()) + "', '" + getName_noRT(next.getName()) + "')");	
+			action = action.concat("('opt', '" + getName_noRT(n.getName()) + "', '" + getName_noRT(next.getName()) + "')");	
 		}
 		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
 		
-		//RTContainer next = container_element(n,0);
-		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addFirst(action);
-		} else {
-			actions.addLast(action);
-		}	
+		actions.addLast(action);
 	}
 
 	// TODO
 	public void try_op(RTContainer n, int ctx){ //try():
 		
 		int i;
+		boolean flag = false;
 		String action = "('try_op', '" + getName_noRT(n.getName()) + "'";
+		String arg1 = getName_noRT(container_element(n,0).getName());
+		String arg2 = n.getRtRegex().substring(n.getRtRegex().indexOf("?") + 1, n.getRtRegex().indexOf(":"));
+		String arg3 = n.getRtRegex().substring(n.getRtRegex().indexOf(":") + 1, n.getRtRegex().length());
 		
-		for(i=0;i<container_size(n);i++){
-			String arg1 = n.getRtRegex().substring(n.getRtRegex().indexOf("?") + 1, n.getRtRegex().indexOf(":"));
-			String arg2 = n.getRtRegex().substring(n.getRtRegex().indexOf("?") + 1, n.getRtRegex().indexOf(":"));
-			action = action.concat(", '");
-			if(arg1.equals("skip") || arg2.equals("skip")){
-				skip(action);
-			}
-			action = action.concat(getName_noRT(container_element(n,i).getName()));
-			action = action.concat("'");
+		if(!arg2.equals("skip")){
+			arg2 = getName_noRT(container_element(n,1).getName());
 		}
-		action = action.concat(")");
+		
+		if(!arg3.equals("skip")){
+			arg3 = getName_noRT(container_element(n,2).getName());
+		}
+
+		action = action.concat(", '");
+		action = action.concat(arg1);
+		action = action.concat("', '");
+		action = action.concat(arg2);
+		action = action.concat("', '");
+		action = action.concat(arg3);
+		action = action.concat("')");
 		
 		for(i=0;i<container_size(n);i++){
 			goalState(container_element(n,i), ctx);
 		}
-		
-		RTContainer next = container_element(n,0);
-		if(next.getRtRegex()==null && container_size(next)==0){
-			actions.addFirst(action);
-		} else {
-			actions.addLast(action);
-		}
+		actions.addLast(action);
 	}
 
 	public void xor(RTContainer n, int ctx){
 		int i;
-		System.out.println("entrei no sAND");
 		String action = "('xor', '" + getName_noRT(n.getName()) + "'";
 		
 		for(i=0;i<container_size(n);i++){
@@ -470,14 +446,8 @@ public class PyhopWriter{
 		actions.addLast(action);
 	}
 
-	// TODO
-	public void skip(String action){
-		action = action.concat("skip");
-	}
-
 	public void means_end(RTContainer n, int ctx){
 		int i;
-		System.out.println("entrei no sAND");
 		String action = "";
 		RTContainer next = container_element(n, 0);
 		for(i=0;i<container_size(n);i++){

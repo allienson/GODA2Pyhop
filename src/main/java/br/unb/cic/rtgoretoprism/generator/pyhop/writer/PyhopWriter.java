@@ -40,6 +40,7 @@ import br.unb.cic.rtgoretoprism.console.ATCConsole;
 import br.unb.cic.rtgoretoprism.generator.CodeGenerationException;
 import br.unb.cic.rtgoretoprism.generator.goda.parser.CtxParser;
 import br.unb.cic.rtgoretoprism.generator.kl.AgentDefinition;
+import br.unb.cic.rtgoretoprism.generator.pyhop.gui.PyhopGUI;
 import br.unb.cic.rtgoretoprism.model.ctx.ContextCondition;
 import br.unb.cic.rtgoretoprism.model.ctx.CtxSymbols;
 import br.unb.cic.rtgoretoprism.model.kl.Const;
@@ -54,7 +55,8 @@ public class PyhopWriter{
 	private Actor a;
 	private PrintWriter file;
 	private LinkedList<String> actions = new LinkedList<String>();
-	
+	private LinkedList<String> variables = new LinkedList<String>();
+	public String filePath = "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py";
 	
 	public PyhopWriter(AgentDefinition ad, Actor a){
 		this.ad = ad;
@@ -65,11 +67,28 @@ public class PyhopWriter{
 		file = createFile(a.getName());
 		
 		file.print("state.objects = { \\\n");
+
 		initialState(ad.rootlist.getFirst());
-		file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
-		
-		file.print("pyhop(state, [ \\\n");
 		goalState(ad.rootlist.getFirst(), 0);
+		
+		PyhopGUI dialog =  new PyhopGUI(filePath, variables, actions);
+		dialog.renderGUI();
+        
+		//variables = dialog.getVariables();
+        //actions = dialog.getActions();
+        
+        if(variables.size()!=0){
+			for(int i=0; i<variables.size(); i++){
+				System.out.println(variables.get(i));
+				if(i != variables.size()){
+					String var = variables.get(i).concat(", \\\n");
+					file.print(var);
+				}
+			}
+		}
+        file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
+		
+        file.print("pyhop(state, [ \\\n");
 		if(actions.size()!=0){
 			for(int i=0; i<actions.size(); i++){
 				System.out.println(actions.get(i));
@@ -82,11 +101,13 @@ public class PyhopWriter{
 		file.print("], verbose=1)");
 		
 		file.close();
+		
+		
 	}
 
 	private PrintWriter createFile(String actor) throws FileNotFoundException {
 		
-		PrintWriter fileObj = new PrintWriter( "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py" );
+		PrintWriter fileObj = new PrintWriter(filePath);
 		fileObj.println("from __future__ import print_function");
 		fileObj.println("from pyhop import *\n");
 		fileObj.println("import goda_operators");
@@ -107,10 +128,12 @@ public class PyhopWriter{
 			RTContainer next = container_element(root,i);
 			if(next.getRtRegex()==null && container_size(next)==0){
 				variable = getName_noRT(container_element(root,i).getName());
-				file.print("'" + variable + "':True, \\\n");
+				//file.print("'" + variable + "':True");
+				variables.add(variable + "=True");
 			} else {
 				variable = getName_noRT(container_element(root,i).getName());
-				file.print("'" + variable + "':False, \\\n");
+				//file.print("'" + variable + "':False");
+				variables.add(variable + "=False");
 			}
 		}
 	}

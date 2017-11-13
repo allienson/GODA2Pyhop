@@ -11,6 +11,7 @@ import java.util.LinkedList;
 
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
@@ -40,7 +41,10 @@ public class PyhopGUI extends JFrame{
 
     JPanel panelTop    = new JPanel();
     JPanel panelVar     = new JPanel();
+    JPanel panelVar2     = new JPanel();
+    JPanel panelSel     = new JPanel();
     JPanel panelVerb = new JPanel();
+    JPanel panelActs = new JPanel();
     JPanel panelFooter = new JPanel();
 
     final JDialog dialog = new JDialog(frame);
@@ -85,13 +89,13 @@ public class PyhopGUI extends JFrame{
 	
 	public void renderGUI() {
 		
-		panelTop.setPreferredSize(new Dimension (475, 60));
+		panelTop.setPreferredSize(new Dimension (575, 60));
 		panelTop.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Select Pyhop directory:", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 		panelTop.setLayout(null);
 		panelTop.setAlignmentY(JComponent.LEFT_ALIGNMENT);
 		
-		textField.setBounds(15, 20, 350, 25); 
-		chooserButton.setBounds(374, 20, 89, 25);
+		textField.setBounds(15, 20, 450, 25); 
+		chooserButton.setBounds(474, 20, 89, 25);
 		
 		chooserButton.setPreferredSize(new Dimension (40, 40));
 		chooserButton.setFocusable(false);
@@ -100,26 +104,35 @@ public class PyhopGUI extends JFrame{
 		panelTop.add(textField);
 		panelTop.add(chooserButton);
 		
-		panelVar.setPreferredSize(new Dimension (475, 190));
+		panelVar.setPreferredSize(new Dimension (575, 190));
 	    panelVar.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Select variables:", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-	    panelVar.setLayout(new GridLayout(6, 3));
-	    panelVar.setAlignmentY(JComponent.LEFT_ALIGNMENT);
+	    panelVar.setLayout(new BoxLayout(panelVar, BoxLayout.Y_AXIS));
+	    
+	    panelVar2.setLayout(new GridLayout(5, 1));
+	    panelVar2.setPreferredSize(new Dimension (575, 150));
 	    
 	    for (String var : variables) {
 	    	if(var.contains("True")){
 	    		String item = var.substring(0, var.indexOf("="));
-	    		JCheckBox cb = new JCheckBox(var);
+	    		JCheckBox cb = new JCheckBox(item);
+	    		cb.setToolTipText(item);
 	    		checked.add(cb);
 	    	}
 	    }
 	    for(JCheckBox cb : checked){
-	    	panelVar.add(cb);
+	    	panelVar2.add(cb);
 	    }
+
+	    panelSel.setLayout(null);
+	    panelSel.setPreferredSize(new Dimension (575, 60));
+	    selButton.setBounds(437, 3, 120, 25);
 	    
-	    selButton.setBounds(375, 116, 87, 23);
-	    panelVar.add(selButton);
+	    panelSel.add(selButton);
 	    
-	    panelVerb.setPreferredSize(new Dimension (295, 55));
+	    panelVar.add(panelVar2);
+	    panelVar.add(panelSel);
+	    
+	    panelVerb.setPreferredSize(new Dimension (250, 55));
 	    panelVerb.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Select verbose:", TitledBorder.LEADING, TitledBorder.TOP, null, null));
 	    panelVerb.setLayout(new GridLayout(1, 2));
 	    
@@ -134,27 +147,29 @@ public class PyhopGUI extends JFrame{
 	    panelVerb.add(verb1);
 	    panelVerb.add(verb2);
 	    
-	    panelFooter.setAlignmentY(JComponent.RIGHT_ALIGNMENT);
-		panelFooter.setPreferredSize(new Dimension (180, 40));
-		//panelFooter.setLayout(null);
-		//panelFooter.setBounds(302, 294, 183, 40);
+	    cancelButton.setBounds(105, 25, 85, 25);
+		accButton.setBounds(205, 25, 85, 25);
 		
-		cancelButton.setBounds(12, 11, 75, 23);
-		accButton.setBounds(99, 11, 75, 23);
+		panelActs.setPreferredSize(new Dimension (275, 55));
+		panelActs.setLayout(null);
+		panelActs.add(cancelButton);
+		panelActs.add(accButton);
 	    
-		panelFooter.add(cancelButton);
-		panelFooter.add(accButton);
+		panelFooter.setPreferredSize(new Dimension (575, 55));
+		panelFooter.setLayout(new BoxLayout(panelFooter, BoxLayout.X_AXIS));
+			    
+		panelFooter.add(panelVerb);
+		panelFooter.add(panelActs);
 		
 		layout.setVerticalGroup(
 			layout.createSequentialGroup()
 				.addComponent(panelTop)   
 				.addComponent(panelVar)
-				.addComponent(panelVerb)
 	            .addComponent(panelFooter)
 		);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setPreferredSize(new Dimension (515, 400));
+        frame.setPreferredSize(new Dimension (615, 370));
         //frame.setLocationRelativeTo(null);
         frame.setContentPane(panelBody);
         frame.pack();
@@ -203,8 +218,10 @@ public class PyhopGUI extends JFrame{
 				} else {
 					verbose = "verbose=2";
 				}
-				frame.dispose();
+				fileWriter();
 			}
+
+			
 		});	
 		
 		cancelButton.addActionListener(new ActionListener(){ 
@@ -220,6 +237,14 @@ public class PyhopGUI extends JFrame{
 	
 	public LinkedList<String> getActions() {
 		return actions;
+	}
+	
+	private void fileWriter() {
+		
+		
+		
+		frame.dispose();
+		
 	}
 }
 

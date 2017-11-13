@@ -53,10 +53,8 @@ import br.unb.cic.rtgoretoprism.util.PathLocation;
 public class PyhopWriter{
 	private AgentDefinition ad;
 	private Actor a;
-	private PrintWriter file;
 	private LinkedList<String> actions = new LinkedList<String>();
 	private LinkedList<String> variables = new LinkedList<String>();
-	public String filePath = "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py";
 	
 	public PyhopWriter(AgentDefinition ad, Actor a){
 		this.ad = ad;
@@ -64,63 +62,13 @@ public class PyhopWriter{
 	}
 
 	public void start() throws FileNotFoundException{
-		file = createFile(a.getName());
 		
-		file.print("state.objects = { \\\n");
-
 		initialState(ad.rootlist.getFirst());
 		goalState(ad.rootlist.getFirst(), 0);
 		
-		PyhopGUI dialog =  new PyhopGUI(filePath, variables, actions);
-		dialog.renderGUI();
-        
-		//variables = dialog.getVariables();
-        //actions = dialog.getActions();
-        
-        if(variables.size()!=0){
-			for(int i=0; i<variables.size(); i++){
-				System.out.println(variables.get(i));
-				if(i != variables.size()){
-					String var = variables.get(i).concat(", \\\n");
-					file.print(var);
-				}
-			}
-		}
-        file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
-		
-        file.print("pyhop(state, [ \\\n");
-		if(actions.size()!=0){
-			for(int i=0; i<actions.size(); i++){
-				System.out.println(actions.get(i));
-				if(i != actions.size()){
-					String action = actions.get(i).concat(", \\\n");
-					file.print(action);
-				}
-			}
-		}
-		file.print("], verbose=1)");
-		
-		file.close();
-		
-		
+		PyhopGUI dialog =  new PyhopGUI(ad, a, variables, actions);
 	}
 
-	private PrintWriter createFile(String actor) throws FileNotFoundException {
-		
-		PrintWriter fileObj = new PrintWriter(filePath);
-		fileObj.println("from __future__ import print_function");
-		fileObj.println("from pyhop import *\n");
-		fileObj.println("import goda_operators");
-		fileObj.println("import goda_methods\n");
-		fileObj.println("print('')");
-		fileObj.println("print_operators()\n");
-		fileObj.println("print('')");
-		fileObj.println("print_methods()\n");
-		fileObj.println("state = State('" + actor + "')");
-		
-		return fileObj;		
-	}
-	
 	private void initialState(RTContainer root) {
 		String variable;
 		for(int i=0; i < container_size(root); i++){
@@ -129,11 +77,11 @@ public class PyhopWriter{
 			if(next.getRtRegex()==null && container_size(next)==0){
 				variable = getName_noRT(container_element(root,i).getName());
 				//file.print("'" + variable + "':True");
-				variables.add(variable + "=True");
+				variables.add("'" + variable + "':True");
 			} else {
 				variable = getName_noRT(container_element(root,i).getName());
 				//file.print("'" + variable + "':False");
-				variables.add(variable + "=False");
+				variables.add("'" + variable + "':False");
 			}
 		}
 	}

@@ -2,10 +2,14 @@ package br.unb.cic.rtgoretoprism.generator.pyhop.gui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.LinkedList;
 
@@ -30,6 +34,9 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
+
+import br.unb.cic.rtgoretoprism.generator.kl.AgentDefinition;
+import it.itc.sra.taom4e.model.core.informalcore.Actor;
 
 public class PyhopGUI extends JFrame{
 
@@ -63,18 +70,24 @@ public class PyhopGUI extends JFrame{
     
     JTextField textField = new JTextField();
     
-    String filePath;
-    String verbose;
+    private String filePath = "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py";
+    private String verbose = "verbose=1";
+	private PrintWriter file;
 	private LinkedList<String> actions = new LinkedList<String>();
 	private LinkedList<String> variables = new LinkedList<String>();
 	private LinkedList<JCheckBox> checked = new LinkedList<JCheckBox>();
 	
+	private AgentDefinition ad;
+	private Actor a;
+	
 
-	public PyhopGUI(String file, LinkedList<String> vars, LinkedList<String> acts){
-		this.filePath = file;
-		this.actions = acts;
-		this.variables = vars;
-
+	public PyhopGUI(AgentDefinition ad, Actor a, LinkedList<String> variables, LinkedList<String> actions) throws FileNotFoundException{
+		this.a = a;
+		this.ad = ad;
+		this.variables = variables;
+		this.actions = actions;
+		
+		renderGUI();
 		return;
 	}	
 	
@@ -95,6 +108,7 @@ public class PyhopGUI extends JFrame{
 		panelTop.setAlignmentY(JComponent.LEFT_ALIGNMENT);
 		
 		textField.setBounds(15, 20, 450, 25); 
+		textField.setText(filePath);
 		chooserButton.setBounds(474, 20, 89, 25);
 		
 		chooserButton.setPreferredSize(new Dimension (40, 40));
@@ -113,14 +127,16 @@ public class PyhopGUI extends JFrame{
 	    
 	    for (String var : variables) {
 	    	if(var.contains("True")){
-	    		String item = var.substring(0, var.indexOf("="));
+	    		String item = var.substring(var.indexOf("'") + 1, var.indexOf("':"));
+	    		item = item.replaceAll("_", " ");
 	    		JCheckBox cb = new JCheckBox(item);
 	    		cb.setToolTipText(item);
 	    		checked.add(cb);
 	    	}
 	    }
+	    
 	    for(JCheckBox cb : checked){
-	    	panelVar2.add(cb);
+    		panelVar2.add(cb);
 	    }
 
 	    panelSel.setLayout(null);
@@ -180,6 +196,23 @@ public class PyhopGUI extends JFrame{
 	
 	private void setActions(){
 		
+//		chooserButton.addActionListener(new ActionListener(){ 
+//            public void actionPerformed(ActionEvent e){ 
+//            	if(selButton.getText().equals("Select All")){
+//            		for(JCheckBox cb : checked){
+//                		cb.setSelected(true);
+//            		}
+//            		selButton.setText("Unselect All");
+//            	} else if(selButton.getText().equals("Unselect All")){
+//            		for(JCheckBox cb : checked){
+//            			cb.setSelected(false);
+//            		}
+//            		selButton.setText("Select All");
+//            	}
+//            }
+//        });
+		
+		
 		selButton.addActionListener(new ActionListener(){ 
             public void actionPerformed(ActionEvent e){ 
             	if(selButton.getText().equals("Select All")){
@@ -195,33 +228,21 @@ public class PyhopGUI extends JFrame{
             	}
             }
         });
-		
+				
 		accButton.addActionListener(new ActionListener(){ 
 			public void actionPerformed(ActionEvent e){ 
 				
-				for(int i=0; i<checked.size();i++){
-					
-					JCheckBox cb = checked.get(i);	
-					String cbText = checked.get(i).getText();
-					int varIndex = variables.indexOf(cbText);
-					
-					if(cb.isSelected()){
-						String var = "'" + cbText + "':True";
-						variables.set(varIndex, var);
-					} else {
-						String var = "'" + cbText + "':False";
-						variables.set(varIndex, var);
-					}
+				setVariables();
+				
+				try {
+					writeFile();
+				} catch (FileNotFoundException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
-				if(verb1.isSelected()){
-					verbose = "verbose=1";
-				} else {
-					verbose = "verbose=2";
-				}
-				fileWriter();
+				
+				frame.dispose();
 			}
-
-			
 		});	
 		
 		cancelButton.addActionListener(new ActionListener(){ 
@@ -231,21 +252,107 @@ public class PyhopGUI extends JFrame{
 		});
 	}
 
-	public LinkedList<String> getVariables() {
-		return variables;
+	protected void setVariables() {
+		
+		
+		for(int i=0; i<checked.size();i++){
+			
+			//JCheckBox cb = checked.get(i);	
+			String cbText = checked.get(i).getText();
+			String var = "";
+			String aux = "";
+			
+			aux = "'" + cbText + "':True";
+			aux = aux.replaceAll(" ", "_");
+			
+			int varIndex = variables.indexOf(aux);	
+			
+			if(checked.get(i).isSelected()){
+				var = "'" + cbText + "':True";
+				var = var.replaceAll(" ", "_");
+			} else {
+				var = "'" + cbText + "':False";
+				var = var.replaceAll(" ", "_");
+			}
+			
+			variables.set(varIndex, var);
+			
+		}
+		if(verb2.isSelected()){
+			verbose = "verbose=2";
+		}
+	}
+
+	public void writeFile() throws FileNotFoundException{
+		
+		file = createFile();
+		
+		writeObjects();
+		writeActions();
+		writeVerbose();
+
+		file.close();
 	}
 	
-	public LinkedList<String> getActions() {
-		return actions;
+ 	private void writeVerbose() {
+ 		file.print("], " + verbose + ")");
+		
+	}
+
+	private void writeActions() {
+		file.print("pyhop(state, [ \\\n");
+		if(actions.size()!=0){
+			for(int i=0; i<actions.size(); i++){
+				System.out.println(actions.get(i));
+				if(i != actions.size()){
+					String action = actions.get(i).concat(", \\\n");
+					file.print(action);
+				}
+			}
+		}
+		
+	}
+
+	private void writeObjects() {
+		file.print("state.objects = { \\\n");
+		if(variables.size()!=0){
+			for(int i=0; i<variables.size(); i++){
+				System.out.println(variables.get(i));
+				if(i != variables.size()){
+					String var = variables.get(i).concat(", \\\n");
+					file.print(var);
+				}
+			}
+		}
+        file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
+		
+	}
+
+	public PrintWriter createFile() throws FileNotFoundException {
+		
+		PrintWriter fileObj = new PrintWriter(filePath);
+		fileObj.println("from __future__ import print_function");
+		fileObj.println("from pyhop import *\n");
+		fileObj.println("import goda_operators");
+		fileObj.println("import goda_methods\n");
+		fileObj.println("print('')");
+		fileObj.println("print_operators()\n");
+		fileObj.println("print('')");
+		fileObj.println("print_methods()\n");
+		fileObj.println("state = State('" + this.a.getName() + "')");
+		
+		return fileObj;		
 	}
 	
-	private void fileWriter() {
-		
-		
-		
-		frame.dispose();
-		
+	public String getName_noRT(String a){
+		String b = a.substring(0, a.indexOf(":"));
+		if(a.indexOf('[') != -1 && a.indexOf(']') != -1)
+			b = a.substring(0, a.indexOf("[")-1);
+		else
+			b = a.substring(0, a.length());
+		return b;
 	}
+	
 }
 
 

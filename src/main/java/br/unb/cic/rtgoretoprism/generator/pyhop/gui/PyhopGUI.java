@@ -22,8 +22,10 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -33,6 +35,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.table.DefaultTableModel;
 
 import br.unb.cic.rtgoretoprism.generator.kl.AgentDefinition;
@@ -40,7 +43,7 @@ import it.itc.sra.taom4e.model.core.informalcore.Actor;
 
 public class PyhopGUI extends JFrame{
 
-	JFrame frame = new JFrame("Pyhop Settings");
+	JFrame frame = new JFrame("GODA-Pyhop");
 
     JPanel panelBody = new JPanel();
   
@@ -50,7 +53,7 @@ public class PyhopGUI extends JFrame{
     JPanel panelVar     = new JPanel();
     JPanel panelVar2     = new JPanel();
     JPanel panelSel     = new JPanel();
-    JPanel panelVerb = new JPanel();
+    JPanel panelOptions = new JPanel();
     JPanel panelActs = new JPanel();
     JPanel panelFooter = new JPanel();
 
@@ -64,13 +67,11 @@ public class PyhopGUI extends JFrame{
     StyledButton chooserButton = new StyledButton("Choose");
     StyledButton accButton = new StyledButton("Finish");
     
-    JRadioButton verb1 = new JRadioButton("verbose=1");
-    JRadioButton verb2 = new JRadioButton("verbose=2");
-    
+    JCheckBox runCheck = new JCheckBox("Open generated files");    
     
     JTextField textField = new JTextField();
     
-    private String filePath = "/home/sabiah/Desktop/dananau-pyhop/goda/goda_problem.py";
+    private String filePath = "/home/sabiah/Desktop/dananau-pyhop/goda";
     private String verbose = "verbose=1";
 	private PrintWriter file;
 	private LinkedList<String> actions = new LinkedList<String>();
@@ -108,7 +109,7 @@ public class PyhopGUI extends JFrame{
 		panelTop.setAlignmentY(JComponent.LEFT_ALIGNMENT);
 		
 		textField.setBounds(15, 20, 450, 25); 
-		textField.setText(filePath);
+		//textField.setText(filePath);
 		chooserButton.setBounds(474, 20, 89, 25);
 		
 		chooserButton.setPreferredSize(new Dimension (40, 40));
@@ -148,23 +149,15 @@ public class PyhopGUI extends JFrame{
 	    panelVar.add(panelVar2);
 	    panelVar.add(panelSel);
 	    
-	    panelVerb.setPreferredSize(new Dimension (250, 55));
-	    panelVerb.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Select verbose:", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-	    panelVerb.setLayout(new GridLayout(1, 2));
+	    panelOptions.setPreferredSize(new Dimension (250, 55));
+	    panelOptions.setBorder(new TitledBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null), "Options", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+	    panelOptions.setLayout(new GridLayout(1, 2));
 	    
-	    ButtonGroup radios = new ButtonGroup();
-	    
-	    verb1.setFocusable(false);
-	    verb1.setSelected(true);
-	    verb2.setFocusable(false);
-	    	    
-	    radios.add(verb1);
-	    radios.add(verb2);
-	    panelVerb.add(verb1);
-	    panelVerb.add(verb2);
+	    panelOptions.add(runCheck);
 	    
 	    cancelButton.setBounds(105, 25, 85, 25);
 		accButton.setBounds(205, 25, 85, 25);
+		accButton.setEnabled(false);
 		
 		panelActs.setPreferredSize(new Dimension (275, 55));
 		panelActs.setLayout(null);
@@ -174,7 +167,7 @@ public class PyhopGUI extends JFrame{
 		panelFooter.setPreferredSize(new Dimension (575, 55));
 		panelFooter.setLayout(new BoxLayout(panelFooter, BoxLayout.X_AXIS));
 			    
-		panelFooter.add(panelVerb);
+		panelFooter.add(panelOptions);
 		panelFooter.add(panelActs);
 		
 		layout.setVerticalGroup(
@@ -184,9 +177,7 @@ public class PyhopGUI extends JFrame{
 	            .addComponent(panelFooter)
 		);
 		
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setPreferredSize(new Dimension (615, 370));
-        //frame.setLocationRelativeTo(null);
         frame.setContentPane(panelBody);
         frame.pack();
         frame.setVisible(true);
@@ -196,21 +187,12 @@ public class PyhopGUI extends JFrame{
 	
 	private void setActions(){
 		
-//		chooserButton.addActionListener(new ActionListener(){ 
-//            public void actionPerformed(ActionEvent e){ 
-//            	if(selButton.getText().equals("Select All")){
-//            		for(JCheckBox cb : checked){
-//                		cb.setSelected(true);
-//            		}
-//            		selButton.setText("Unselect All");
-//            	} else if(selButton.getText().equals("Unselect All")){
-//            		for(JCheckBox cb : checked){
-//            			cb.setSelected(false);
-//            		}
-//            		selButton.setText("Select All");
-//            	}
-//            }
-//        });
+		chooserButton.addActionListener(new ActionListener(){ 
+            public void actionPerformed(ActionEvent e){ 
+            	fileChooser();
+            	accButton.setEnabled(true);
+            }
+        });
 		
 		
 		selButton.addActionListener(new ActionListener(){ 
@@ -257,7 +239,6 @@ public class PyhopGUI extends JFrame{
 		
 		for(int i=0; i<checked.size();i++){
 			
-			//JCheckBox cb = checked.get(i);	
 			String cbText = checked.get(i).getText();
 			String var = "";
 			String aux = "";
@@ -268,18 +249,24 @@ public class PyhopGUI extends JFrame{
 			int varIndex = variables.indexOf(aux);	
 			
 			if(checked.get(i).isSelected()){
-				var = "'" + cbText + "':True";
-				var = var.replaceAll(" ", "_");
+				var = "'" + cbText + "':True";;
 			} else {
 				var = "'" + cbText + "':False";
-				var = var.replaceAll(" ", "_");
 			}
 			
 			variables.set(varIndex, var);
 			
 		}
-		if(verb2.isSelected()){
-			verbose = "verbose=2";
+		if(runCheck.isSelected()){
+			try {
+				
+				Process process = new ProcessBuilder("/usr/bin/gedit", "/home/sabiah/Desktop/dananau-pyhop/goda/goda-pyhop.py").start();
+				//File f = new File(filePath + "/goda-pyhop.py");
+				//java.awt.Desktop.getDesktop().open(f);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
 		}
 	}
 
@@ -291,21 +278,20 @@ public class PyhopGUI extends JFrame{
 		writeActions();
 		writeVerbose();
 
-		file.close();
-	}
-	
- 	private void writeVerbose() {
- 		file.print("], " + verbose + ")");
-		
+		file.close();	
 	}
 
+	private void writeVerbose() {
+ 		file.print("], verbose=1)");
+ 	}
+
 	private void writeActions() {
-		file.print("pyhop(state, [ \\\n");
+		file.print("pyhop(state, [\\\n");
 		if(actions.size()!=0){
 			for(int i=0; i<actions.size(); i++){
 				System.out.println(actions.get(i));
 				if(i != actions.size()){
-					String action = actions.get(i).concat(", \\\n");
+					String action = actions.get(i).concat(",\\\n");
 					file.print(action);
 				}
 			}
@@ -314,23 +300,25 @@ public class PyhopGUI extends JFrame{
 	}
 
 	private void writeObjects() {
-		file.print("state.objects = { \\\n");
+		file.print("state.objects = {\\\n");
 		if(variables.size()!=0){
 			for(int i=0; i<variables.size(); i++){
 				System.out.println(variables.get(i));
 				if(i != variables.size()){
-					String var = variables.get(i).concat(", \\\n");
+					String var = variables.get(i).concat(",\\\n");
+					var = var.replaceAll(" ","_");
 					file.print(var);
 				}
 			}
 		}
-        file.print("'" + getName_noRT(ad.rootlist.getFirst().getName()) + "':False}\n\n");
+		String root = getName_noRT(ad.rootlist.getFirst().getName());
+        file.print("'" + root + "':False}\n\n");
 		
 	}
 
-	public PrintWriter createFile() throws FileNotFoundException {
+	private PrintWriter createFile() throws FileNotFoundException {
 		
-		PrintWriter fileObj = new PrintWriter(filePath);
+		PrintWriter fileObj = new PrintWriter(filePath + "/goda-pyhop.py");
 		fileObj.println("from __future__ import print_function");
 		fileObj.println("from pyhop import *\n");
 		fileObj.println("import goda_operators");
@@ -344,7 +332,7 @@ public class PyhopGUI extends JFrame{
 		return fileObj;		
 	}
 	
-	public String getName_noRT(String a){
+	private String getName_noRT(String a){
 		String b = a.substring(0, a.indexOf(":"));
 		if(a.indexOf('[') != -1 && a.indexOf(']') != -1)
 			b = a.substring(0, a.indexOf("[")-1);
@@ -353,6 +341,16 @@ public class PyhopGUI extends JFrame{
 		return b;
 	}
 	
+	private void fileChooser(){
+	
+		JFileChooser pyhopChooser = new JFileChooser("..");  
+	    pyhopChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+	    pyhopChooser.showOpenDialog(this);  
+	    filePath = pyhopChooser.getSelectedFile().getPath();
+	    textField.setText(filePath);
+		
+	}
 }
 
 

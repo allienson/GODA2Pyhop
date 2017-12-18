@@ -159,7 +159,7 @@ public class PyhopWriter{
 			if(rule.indexOf('#') != -1 && n.getDecomposition()==Const.OR)
 				back = "INCLUSIVE_GATEWAY (From RT: " + getName_noRT(n.getName()) + ") ";
 			if(rule.contains("opt") || rule.indexOf('|') != -1)
-				back = "EXCLUSIVE_GATEWAY (From RT: " + getName_noRT(n.getName()) + ") ";
+				back = "Esec:def-problemaXCLUSIVE_GATEWAY (From RT: " + getName_noRT(n.getName()) + ") ";
 			if(rule.contains("try")){
 				for(int i=0;i<container_size(n);i++){
 					String args1 = n.getRtRegex().substring(n.getRtRegex().indexOf("(") + 1, n.getRtRegex().indexOf(")"));
@@ -383,9 +383,13 @@ public class PyhopWriter{
 		}
 		
 		if(!arg3.equals("skip")){
-			arg3 = getName_noRT(container_element(n,2).getName());
+			arg3 = getName_noRT(container_element(n,1).getName());
 		}
-
+		
+		System.out.println("arg1="+arg1);
+		System.out.println("arg2="+arg2);
+		System.out.println("arg3="+arg3);
+		
 		action = action.concat(", '");
 		action = action.concat(arg1);
 		action = action.concat("', '");
